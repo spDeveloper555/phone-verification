@@ -1,0 +1,18 @@
+service: phone-verification-api
+
+provider:
+  name: aws
+  runtime: nodejs18.x
+  region: ap-south-1
+  environment:
+    MONGO_URI: ${env:DB_URI}
+    JWT_SECRET: ${env:JWT_SECRET}
+    TWILIO_SID: ${env:TWILIO_SID}
+    TWILIO_AUTH_TOKEN: ${env:TWILIO_AUTH_TOKEN}
+    TWILIO_PHONE: ${env:TWILIO_PHONE}
+
+functions:
+  api:
+    handler: handler.handler
+    events:
+      - httpApi: '*'

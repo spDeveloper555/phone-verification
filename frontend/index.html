@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Phone Verification</title>
+
+    <style>
+        * {
+            box-sizing: border-box;
+            font-family: "Segoe UI", Tahoma, sans-serif;
+        }
+
+        body {
+            margin: 0;
+            height: 100vh;
+            background: linear-gradient(135deg, #4f46e5, #9333ea);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .card {
+            background: #fff;
+            width: 100%;
+            max-width: 380px;
+            padding: 25px;
+            border-radius: 14px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, .2);
+            animation: fadeIn .5s ease;
+        }
+
+        h2 {
+            margin: 0 0 20px;
+            text-align: center;
+            color: #333;
+        }
+
+        label {
+            font-size: 14px;
+            color: #555;
+            margin-bottom: 6px;
+            display: block;
+        }
+
+        input {
+            width: 100%;
+            padding: 12px;
+            border-radius: 8px;
+            border: 1px solid #ccc;
+            margin-bottom: 15px;
+            font-size: 15px;
+        }
+
+        input:focus {
+            outline: none;
+            border-color: #6366f1;
+        }
+
+        button {
+            width: 100%;
+            padding: 12px;
+            border-radius: 8px;
+            border: none;
+            background: #6366f1;
+            color: #fff;
+            font-size: 16px;
+            cursor: pointer;
+            transition: .3s;
+        }
+
+        button:hover {
+            background: #4f46e5;
+        }
+
+        button:disabled {
+            background: #a5b4fc;
+            cursor: not-allowed;
+        }
+
+        .otp-section {
+            display: none;
+        }
+
+        .message {
+            margin-top: 12px;
+            text-align: center;
+            font-size: 14px;
+            transition: opacity 0.5s ease;
+        }
+
+        .success {
+            color: #16a34a;
+        }
+
+        .error {
+            color: #dc2626;
+        }
+
+        .loading {
+            opacity: .6;
+            pointer-events: none;
+        }
+
+        #success-screen p {
+            margin-bottom: 20px;
+            font-size: 15px;
+        }
+
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @media (max-width: 420px) {
+            .card {
+                margin: 0 15px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="card">
+        <h2>Phone Verification</h2>
+
+        <div id="phone-section">
+            <label>Phone Number</label>
+            <input id="phone" placeholder="+91XXXXXXXXXX" />
+            <button onclick="sendOTP()">Send OTP</button>
+        </div>
+
+        <div id="otp-section" class="otp-section">
+            <label>Enter OTP</label>
+            <input id="otp" placeholder="6 digit OTP" />
+            <button onclick="verifyOTP()">Verify OTP</button>
+        </div>
+
+        <div id="message" class="message"></div>
+    </div>
+
+    <div class="card" id="success-screen" style="display:none;">
+        <h2>🎉 Verified Successfully</h2>
+        <p style="text-align:center;color:#555;">
+            Your phone number has been verified.
+        </p>
+    </div>
+
+    <script>
+        const API_BASE = "http://localhost:3000/api/auth";
+
+        const phoneSection = document.getElementById("phone-section");
+        const otpSection = document.getElementById("otp-section");
+        const messageBox = document.getElementById("message");
+
+        let messageTimer = null;
+
+        function showMessage(text, type) {
+            if (messageTimer) {
+                clearTimeout(messageTimer);
+            }
+
+            messageBox.innerText = text;
+            messageBox.className = `message ${type}`;
+
+            if (type === 'success') {
+                setTimeout(() => {
+                    messageBox.innerText = '';
+                }, 3000);
+            }
+        }
+
+
+        function setLoading(isLoading) {
+            document.querySelector(".card").classList.toggle("loading", isLoading);
+        }
+
+        async function sendOTP() {
+            const phone = document.getElementById("phone").value.trim();
+
+            if (!phone) {
+                return showMessage("Please enter phone number", "error");
+            }
+
+            try {
+                setLoading(true);
+                const res = await fetch(`${API_BASE}/send-otp`, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ phone })
+                });
+
+                const data = await res.json();
+                if (!res.ok) {
+                    throw new Error(data.errors[0].msg || data.message || "Failed");
+                }
+
+                showMessage("OTP sent successfully", "success");
+                phoneSection.style.display = "none";
+                otpSection.style.display = "block";
+            } catch (err) {
+                showMessage(err.message, "error");
+            } finally {
+                setLoading(false);
+            }
+        }
+
+        async function verifyOTP() {
+            const phone = document.getElementById("phone").value.trim();
+            const otp = document.getElementById("otp").value.trim();
+
+            if (!otp) {
+                return showMessage("Please enter OTP", "error");
+            }
+
+            try {
+                setLoading(true);
+                const res = await fetch(`${API_BASE}/verify-otp`, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ phone, otp })
+                });
+
+                const data = await res.json();
+                if (!res.ok) throw new Error(data.message || "Verification failed");
+
+                showMessage("Phone verified successfully 🎉", "success");
+
+                localStorage.setItem("token", data.token);
+
+                setTimeout(() => {
+                    document.querySelector(".card").style.display = "none";
+                    document.getElementById("success-screen").style.display = "block";
+                }, 500);
+
+            } catch (err) {
+                showMessage(err.message, "error");
+            } finally {
+                setLoading(false);
+            }
+        }
+
+    </script>
+
+</body>
+
+</html>
