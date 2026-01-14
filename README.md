@@ -68,7 +68,7 @@ TWILIO_PHONE=+xxxxxxxx
 ## Installation & Setup
 
 - Clone Repository
-git clone https://github.com/spDeveloper555/SHC_Node_API.git
+git clone https://github.com/spDeveloper555/phone-verification.git
 cd SHC_Node_API
 
 - Install Dependencies
