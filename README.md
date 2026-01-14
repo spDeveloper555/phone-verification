@@ -28,6 +28,43 @@ The system sends an OTP via SMS, validates it with expiry, and verifies the user
 - CSS (Responsive)
 - Vanilla JavaScript (Fetch API)
 
+## Environment Variables (.env)
+
+Create a .env file in the project root.
+
+⚠️ IMPORTANT
+
+Do NOT commit .env
+
+Always add .env to .gitignore
+
+## .env Format
+
+# ===============================
+# App Settings
+# ===============================
+PORT=3000
+NODE_ENV=development
+
+# ===============================
+# Database Configuration
+# ===============================
+DB_URI=mongodb://localhost:27017/shc_phone_verification
+DB_NAME=shc_phone_verification
+
+# ===============================
+# JWT Configuration
+# ===============================
+JWT_SECRET=xxxxxxxxxxxxxxxxxxxxxxxx
+JWT_EXPIRES_IN=1d
+
+# ===============================
+# Twilio Configuration
+# ===============================
+TWILIO_SID=ACxxxxxxxxxxxxxxxxxx
+TWILIO_AUTH_TOKEN=xxxxxxxxxxxxxxxxxxxxxxxx
+TWILIO_PHONE=+xxxxxxxx
+
 ## Installation & Setup
 
 - Clone Repository

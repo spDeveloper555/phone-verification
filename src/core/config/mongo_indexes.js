@@ -1,11 +1,11 @@
 const Mongo_indexes = {
     createIndex: [
         {
-            'users': [{ user_id: 1, email: 1}]
+            'user_verification': [{ phone: 1}]
         }
     ],
     collectionSetup: [
-        'users',
+        'user_verification',
     ]
 }
 module.exports = Mongo_indexes;
